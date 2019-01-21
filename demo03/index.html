@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Getters</title>
+</head>
+<body>
+<div id="app">
+    <todo-list></todo-list>
+</div>
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+    const TodoList = {
+        template: `
+            <div>
+                <ul>
+                    <li v-for="todo of todos" :key="todo.id">{{todo.text}}</li>
+                </ul>
+            </div>`,
+        // computed: {
+        //     todos: function () {
+        //         return this.$store.getters.doneTodos
+        //     }
+        // }
+        // computed: Vuex.mapGetters(['doneTodos'])
+        computed: Vuex.mapGetters({
+            todos: 'doneTodos'
+        })
+    };
+
+    const store = new Vuex.Store({
+        state: {
+            todos: [
+                {
+                    id: 1,
+                    text: 'Drink tea.',
+                    done: false
+                },
+                {
+                    id: 2,
+                    text: 'Eat apple.',
+                    done: true
+                },
+                {
+                    id: 3,
+                    text: 'Do exercise.',
+                    done: false
+                }
+            ]
+        },
+        getters: {
+            doneTodos: (state, getters) => state.todos.filter(todo => todo.done)
+        }
+    });
+
+    const app = new Vue({
+        el: '#app',
+        store,
+        components: {TodoList}
+    });
+</script>
+</body>
+</html>
