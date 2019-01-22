@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Actions - Composing Actions</title>
+</head>
+<body>
+<div id="app">
+    <counter></counter>
+</div>
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+    const TO_INCREMENT = "to_increment";
+    const INCREMENT = "increment";
+    const DECREMENT = "decrement";
+    const LOG = "log";
+
+    const Counter = {
+        template: `
+            <div>
+                {{count}}
+                <button @click="actionHit">Action Hit</button>
+            </div>`,
+        computed: Vuex.mapState(['count']),
+        methods: {
+            actionHit() {
+                let d = this.$store.dispatch;
+                d(TO_INCREMENT, 10).then(() => {
+                    return d(DECREMENT, 5);
+                }).then(() => {
+                    console.log("Finished.")
+                });
+            }
+        }
+    };
+
+    const store = new Vuex.Store({
+        state: {
+            count: 0
+        },
+        mutations: {
+            [INCREMENT](state, amount) {
+                state.count += amount;
+            },
+            [DECREMENT](state, amount) {
+                state.count -= amount;
+            },
+            [LOG](state, text) {
+                console.log(text);
+            }
+        },
+        actions: {
+            [INCREMENT](context, amount) {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        context.commit(INCREMENT, amount);
+                        resolve();
+                    }, 2000)
+                });
+            },
+            [TO_INCREMENT]({dispatch, commit}, amount) {
+                return dispatch(INCREMENT, amount).then(() => {
+                    commit(LOG, "Count was increased ~");
+                });
+            },
+            [DECREMENT]({commit}, amount) {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        commit(DECREMENT, amount);
+                        resolve();
+                    }, 1000)
+                });
+            }
+        }
+    });
+
+    const app = new Vue({
+        el: '#app',
+        store,
+        components: {Counter}
+    });
+</script>
+</body>
+</html>
