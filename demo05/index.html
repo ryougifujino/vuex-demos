@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Actions - Dispatching Actions in Components</title>
+</head>
+<body>
+<div id="app">
+    <counter></counter>
+</div>
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+    const INCREMENT = 'increment';
+
+    const Counter = {
+        template: `
+            <div>
+                <div>{{count}}</div>
+                <button @click="delayPlus({amount:10})">Delay Plus10</button>
+            </div>`,
+        computed: {
+            count: function () {
+                return this.$store.state.count;
+            }
+        },
+        methods: {
+            // delayPlus: function (payload) {
+            //     this.$store.dispatch(INCREMENT, payload);
+            // }
+            ...Vuex.mapActions({
+                delayPlus: INCREMENT
+            })
+        }
+    };
+
+    const store = new Vuex.Store({
+        state: {
+            count: 0
+        },
+        mutations: {
+            [INCREMENT](state, payload) {
+                state.count += payload.amount;
+            }
+        },
+        actions: {
+            [INCREMENT]({commit}, payload) {
+                setTimeout(() => {
+                    commit(INCREMENT, payload);
+                }, 3000);
+            }
+        }
+    });
+
+    const app = new Vue({
+        el: '#app',
+        store,
+        components: {Counter}
+    });
+</script>
+</body>
+</html>
