@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modules - Namespacing</title>
+</head>
+<body>
+
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+    const moduleAa = {
+        state: {
+            count: 20
+        },
+        actions: {
+            printCount() {
+                console.log('moduleAa, printCount()');
+            }
+        }
+    };
+
+    const moduleAa2 = {
+        state: {
+            count: 21
+        },
+        namespaced: true,
+        actions: {
+            printCount() {
+                console.log('moduleAa2, printCount()');
+            }
+        }
+    };
+
+    const moduleA = {
+        namespaced: true,
+        state: {
+            count: 5
+        },
+        getters: {
+            countPlus(state, getters, rootState) {
+                return state.count = state.count + rootState.count;
+            }
+        },
+        actions: {
+            printCount({state, rootState}) {
+                console.log('local count:', state.count);
+                console.log('root count:', rootState.count);
+            }
+        },
+        modules: {
+            aa: moduleAa,   // not namespaced
+            aa2: moduleAa2  // namespaced
+        }
+    };
+
+    const store = new Vuex.Store({
+        state: {
+            count: 233
+        },
+        modules: {
+            a: moduleA
+        }
+    });
+
+    console.log('store.state.a.count:', store.state.a.count);
+    console.log('store.getters.countPlus:', store.getters['a/countPlus']);
+    store.dispatch('a/printCount');         // triggered printCount in both moduleA and moduleAa
+    store.dispatch('a/aa2/printCount');     // triggered printCount in moduleAa2
+    console.log(store.state.a.aa.count);    // output: 20
+    console.log(store.state.a.aa2.count);   // output: 21
+</script>
+</body>
+</html>
