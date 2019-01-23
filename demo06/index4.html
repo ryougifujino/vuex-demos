@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modules - Binding Helpers with Namespace</title>
+</head>
+<body>
+<div id="app">
+    <counter></counter>
+</div>
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+    let {createNamespacedHelpers} = Vuex;
+    const {mapMutations} = createNamespacedHelpers('a');
+
+    const Counter = {
+        template: `
+            <div>
+                <div>{{count}}</div>
+                <button @click="plus(1)">+1</button>
+                <button @click="multiply(2)">x2</button>
+            </div>`,
+        // computed: Vuex.mapState({
+        //     count: state => state.a.count
+        // }),
+        // methods: {
+        //     ...Vuex.mapActions(['a/plus']),
+        //     plus(amount){
+        //         this['a/plus'](amount);
+        //     }
+        // }
+        computed: Vuex.mapState('a', ['count']),
+        methods: {
+            ...Vuex.mapActions('a', ['plus']),
+            ...mapMutations(['multiply'])
+        },
+
+    };
+
+    const moduleA = {
+        namespaced: true,
+        state: {
+            count: 233
+        },
+        actions: {
+            plus({state}, amount) {
+                state.count += amount;
+            }
+        },
+        mutations: {
+            multiply(state, coefficient) {
+                state.count *= coefficient;
+            }
+        }
+    };
+
+    const store = new Vuex.Store({
+        modules: {
+            a: moduleA
+        }
+    });
+
+    const app = new Vue({
+        el: '#app',
+        store,
+        components: {Counter}
+    });
+</script>
+</body>
+</html>
