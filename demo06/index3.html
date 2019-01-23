@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modules - Namespacing - Accessing Global Assets in Namespaced Modules/Register Global
+        Action in Namespaced Modules</title>
+</head>
+<body>
+
+<script src="https://unpkg.com/vue@2.5.22/dist/vue.js"></script>
+<script src="https://unpkg.com/vuex@3.1.0/dist/vuex.js"></script>
+<script>
+
+    const moduleA = {
+        namespaced: true,
+        state: {
+            count: 50
+        },
+        mutations: {
+            plusCount(state, amount) {  // without rootState, rootGetters
+                state.count += amount;
+            }
+        },
+        actions: {
+            plusCount({dispatch, commit, getters, rootGetters}, amount) {
+                commit('plusCount', amount, {root: true});
+            },
+            // Register Global Action in Namespaced Modules
+            printRootState: {
+                root: true,
+                handler: ({rootState}) => {
+                    console.log('state.count', rootState.count);
+                }
+            }
+        },
+        getters: {
+            countPro: (state, getters, rootState, rootGetters) =>
+                state.count             // 50 +
+                + getters.pi            // 3.1415926 +
+                + rootState.count       // 5 +
+                + rootGetters.countPro, // 6 = 64.1415926
+            pi: () => 3.1415926
+        }
+    };
+
+    const store = new Vuex.Store({
+        state: {
+            count: 0
+        },
+        mutations: {
+            plusCount(state, amount) {
+                state.count += amount;
+            }
+        },
+        actions: {
+            plusCount({commit}, amount) {
+                commit('plusCount', amount);
+            }
+        },
+        getters: {
+            countPro: state => state.count + 1
+        },
+        modules: {
+            a: moduleA
+        }
+    });
+
+    console.log('store.state.count:', store.state.count);                                           // 0
+    console.log('store.getters.countPro:', store.getters.countPro);                                 // 1
+    store.dispatch('plusCount', 5);
+    console.log("after store.dispatch('plusCount', 5), store.state.count:", store.state.count);     // 5
+    console.log("store.getters['a/countPro']:", store.getters['a/countPro']);                       // 64.1415926
+    store.dispatch('a/plusCount', 2);
+    console.log("after store.dispatch('a/plusCount', 2), store.state.count:", store.state.count);   // 7
+    store.dispatch('printRootState');
+</script>
+</body>
+</html>
